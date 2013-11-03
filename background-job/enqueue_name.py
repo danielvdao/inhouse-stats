@@ -10,7 +10,7 @@ def main():
 
     redis_queue.initQueue()
     
-    redis_queue.enqueue(handler, arguments[1], 10000)
+    redis_queue.enqueue(handler, arguments[1], 100000)
     # TODO add timeout
     
 if __name__ == "__main__":

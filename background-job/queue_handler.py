@@ -5,7 +5,8 @@ import time
 import urllib
 
 DATA_DIRECTORY = '/drive1/inhouse-data-dump'
-SLEEP_TIME = 7200 # 2 hours in seconds TODO change to 2 hours
+SLEEP_TIME = 7200 # 2 hours in seconds
+ADDITIONAL_SLEEP_TIME = 3600 # 1 hour in seconds
 
 def handler(summonerName):
     print "Processing", summonerName
@@ -60,3 +61,5 @@ def handler(summonerName):
         
         with open(jsonOutputPath, 'w') as outfile:
             json.dump(recentGameData, outfile, indent=2, sort_keys=True)
+            
+    # TODO add additional sleep time
