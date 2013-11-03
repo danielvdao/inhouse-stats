@@ -9,13 +9,33 @@ class LegendaryAPI(object):
     """All functions return a JSON dictionary"""
     
     def getAccountIdBySummonerName(self, summonerName):
-        jsonObject = json.load(urllib2.urlopen(getSummonerByNameUrl % summonerName))
-        return jsonObject['acctId']
+        url = getSummonerByNameUrl % summonerName
+        print "Getting", url
+        jsonObject = json.load(urllib2.urlopen(url))
+        if 'acctId' in jsonObject:
+            return jsonObject['acctId']
+        else:
+            return None
         
     def getInProgressGameBySummonerName(self, summonerName):
-        accountId = self.getAccountIdBySummonerName(summonerName)
-        return json.load(urllib2.urlopen(retrieveInProgressGameBySummonerNameUrl % accountId))
+        url = retrieveInProgressGameBySummonerNameUrl % summonerName
+        print "Getting", url
+        jsonData = json.load(urllib2.urlopen(url))
+        if 'error' in jsonData:
+            return None
+        else:
+            return jsonData
         
     def getRecentGamesBySummonerName(self, summonerName):
         accountId = self.getAccountIdBySummonerName(summonerName)
-        return json.load(urllib2.urlopen(getRecentGamesByAccountIdUrl % accountId))
+        if accountId == None:
+            return None
+        
+        url = getRecentGamesByAccountIdUrl % accountId
+        print "Getting", url
+        return json.load(urllib2.urlopen(url))
+        
+    def getRecentGamesByAccountId(self, accountId):
+        url = getRecentGamesByAccountIdUrl % accountId
+        print "Getting", url
+        return json.load(urllib2.urlopen(url))
