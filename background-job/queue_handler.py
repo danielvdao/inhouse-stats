@@ -5,7 +5,7 @@ import time
 import urllib
 
 DATA_DIRECTORY = '/drive1/inhouse-data-dump'
-SLEEP_TIME = 3600 # 2 hours in seconds TODO change to 2 hours
+SLEEP_TIME = 7200 # 2 hours in seconds TODO change to 2 hours
 
 def handler(summonerName):
     print "Processing", summonerName
