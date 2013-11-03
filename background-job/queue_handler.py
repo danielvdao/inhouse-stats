@@ -62,4 +62,4 @@ def handler(summonerName):
         with open(jsonOutputPath, 'w') as outfile:
             json.dump(recentGameData, outfile, indent=2, sort_keys=True)
             
-    # TODO add additional sleep time
+    
