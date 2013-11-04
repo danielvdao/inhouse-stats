@@ -1,12 +1,13 @@
 import json
 import urllib2
+import os
 
 getSummonerByNameUrl = "http://legendaryapi.com/api/v1.0/na/summoner/getSummonerByName/%s"
 getRecentGamesByAccountIdUrl = "http://legendaryapi.com/api/v1.0/na/summoner/getRecentGames/%s"
 retrieveInProgressGameBySummonerNameUrl  = "http://legendaryapi.com/api/v1.0/na/summoner/retrieveInProgressSpectatorGameInfo/%s"
 getPublicSummonerDataByAccountIdUrl ="http://legendaryapi.com/api/v1.0/na/summoner/getAllPublicSummonerDataByAccount/%s"
 
-CHAMPION_MAPPING_FILENAME = "champion_mapping.raw"
+CHAMPION_MAPPING_FILENAME = os.path.join(os.path.dirname(__file__), "champion_mapping.raw")
 
 championIdToNameMap = {}
 championNameToIdMap = {}
@@ -70,5 +71,6 @@ def getRecentGamesByAccountId(accountId):
 def getChampionNameFromId(championId):
     return championIdToNameMap[championId]
 
+# TODO ignore case for this
 def getChampionIdFromName(championName):
     return championNameToIdMap[championName]

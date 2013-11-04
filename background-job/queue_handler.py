@@ -75,10 +75,12 @@ def handler(summonerName):
                 time.sleep(ADDITIONAL_SLEEP_TIME)
         
         with open(jsonOutputPath, 'w') as outfile:
-            json.dump(recentGameData, outfile, indent=2, sort_keys=True)
+            game = getGameFromRecentGamesById(gameId, recentGameData)
+            
+            json.dump(game, outfile, indent=2, sort_keys=True)
             print "Summoner game history saved to", jsonOutputPath
             
-            mongo_dao.insertGameResult(getGameFromRecentGamesById(gameId, recentGameData))
+            mongo_dao.insertGameResult(game)
             print "%s game history saved to MongoDB" % summoner
             
 def gameIdExistsInRecentGames(gameId, recentGameJsonData):
