@@ -3,6 +3,7 @@ import os
 import json
 import time
 import urllib
+from db import mongo_dao
 
 DATA_DIRECTORY = '/drive1/inhouse-data-dump'
 SLEEP_TIME = 7200 # 2 hours in seconds
@@ -17,10 +18,7 @@ def handler(summonerName):
         print "Unable to get current game data for %s. Player may not be in a game." % summonerName
         return
     
-    # only proceed if game type is CUSTOM_GAME
-    currentGameType = currentGameData['game']['gameType']
-    if currentGameType != "CUSTOM_GAME":
-        print "%s is not currently in a custom game. Current game type: %s" % (summonerName, currentGameType)
+    if not isInHouseGame(currentGameData):
         return
     
     # write current game data to disk
@@ -43,6 +41,9 @@ def handler(summonerName):
     with open(gameDataFileName, 'w') as outfile:
         json.dump(currentGameData, outfile, indent=2, sort_keys=True)
         print "Game data saved to", gameDataFileName
+        
+        mongo_dao.insertGame(currentGameData)
+        print "Game data written to MongoDB"
     
     summoners = []
     playerData = []
@@ -78,6 +79,9 @@ def handler(summonerName):
             json.dump(recentGameData, outfile, indent=2, sort_keys=True)
             print "Summoner game history saved to", jsonOutputPath
             
+            mongo_dao.insertGameResult(getGameFromRecentGamesById(gameId, recentGameData))
+            print "%s game history saved to MongoDB" % summoner
+            
 def gameIdExistsInRecentGames(gameId, recentGameJsonData):
     for gameStats in recentGameJsonData['gameStatistics']['array']:
         if gameStats['gameId'] == gameId:
@@ -85,3 +89,39 @@ def gameIdExistsInRecentGames(gameId, recentGameJsonData):
     
     return False
     
+def getGameFromRecentGamesById(gameId, recentGameJsonData):
+    for gameStats in recentGameJsonData['gameStatistics']['array']:
+        if gameStats['gameId'] == gameId:
+            return gameStats
+    
+    return None
+    
+def isInHouseGame(gameData):
+    """Criteria:
+    - PRACTICE_GAME or CUSTOM_GAME type
+    - 10 players in game
+    - No bots
+    """
+    
+    currentGameType = gameData['game']['gameType']
+    if currentGameType != "CUSTOM_GAME" and currentGameType != "PRACTICE_GAME":
+        print "Not in house game. Current game type is", currentGameType
+        return False
+    
+    teamOneArray = gameData['game']['teamOne']['array']
+    teamTwoArray = gameData['game']['teamTwo']['array']
+    players = []
+    players.extend(teamOneArray)
+    players.extend(teamTwoArray)
+    
+    numPlayers = len(players)
+    if numPlayers < 10:
+        print "Not in house game. Number of players is", numPlayers
+        return False
+        
+    for player in players:
+        if 'summonerId' not in player:
+            print "Not in house game. There are bots!"
+            return False
+        
+    return True

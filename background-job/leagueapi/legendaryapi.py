@@ -4,6 +4,7 @@ import urllib2
 getSummonerByNameUrl = "http://legendaryapi.com/api/v1.0/na/summoner/getSummonerByName/%s"
 getRecentGamesByAccountIdUrl = "http://legendaryapi.com/api/v1.0/na/summoner/getRecentGames/%s"
 retrieveInProgressGameBySummonerNameUrl  = "http://legendaryapi.com/api/v1.0/na/summoner/retrieveInProgressSpectatorGameInfo/%s"
+getPublicSummonerDataByAccountIdUrl ="http://legendaryapi.com/api/v1.0/na/summoner/getAllPublicSummonerDataByAccount/%s"
 
 class LegendaryAPI(object):
     """All functions return a JSON dictionary"""
@@ -14,6 +15,16 @@ class LegendaryAPI(object):
         jsonObject = json.load(urllib2.urlopen(url))
         if 'acctId' in jsonObject:
             return jsonObject['acctId']
+        else:
+            return None
+            
+    def getSummonerNameByAccountId(self, accountId):
+        url = getPublicSummonerDataByAccountIdUrl % accountId
+        print "Getting", url
+        jsonObject = json.load(urllib2.urlopen(url))
+        
+        if 'summoner' in jsonObject:
+            return jsonObject['summoner']['name']
         else:
             return None
         
