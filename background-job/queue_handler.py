@@ -11,9 +11,8 @@ ADDITIONAL_SLEEP_TIME = 3600 # 1 hour in seconds
 
 def handler(summonerName):
     print "Processing", summonerName
-    legendaryApi = legendaryapi.LegendaryAPI()
 
-    currentGameData = legendaryApi.getInProgressGameBySummonerName(summonerName)
+    currentGameData = legendaryapi.getInProgressGameBySummonerName(summonerName)
     if currentGameData == None:
         print "Unable to get current game data for %s. Player may not be in a game." % summonerName
         return
@@ -69,7 +68,7 @@ def handler(summonerName):
         
         gameIdExists = False
         while not gameIdExists:
-            recentGameData = legendaryApi.getRecentGamesBySummonerName(summonerUrlName)
+            recentGameData = legendaryapi.getRecentGamesBySummonerName(summonerUrlName)
             gameIdExists = gameIdExistsInRecentGames(gameId, recentGameData)
             if not gameIdExists:
                 print "Game id %s is not in %s's recent history. Sleeping for %s and retrying" % (gameId, summoner, ADDITIONAL_SLEEP_TIME)
