@@ -14,7 +14,13 @@ def handler(summonerName):
 
     currentGameData = legendaryApi.getInProgressGameBySummonerName(summonerName)
     if currentGameData == None:
-        print "Unable to get current game data for", summonerName
+        print "Unable to get current game data for %s. Player may not be in a game." % summonerName
+        return
+    
+    # only proceed if game type is CUSTOM_GAME
+    currentGameType = currentGameData['game']['gameType']
+    if currentGameType != "CUSTOM_GAME":
+        print "%s is not currently in a custom game. Current game type: %s" % (summonerName, currentGameType)
         return
     
     # write current game data to disk
@@ -23,6 +29,7 @@ def handler(summonerName):
         print "Game id:", gameId
     except KeyError:
         print "No game ID found:", currentGameData
+        return
         
     gameDirectoryPath = os.path.join(DATA_DIRECTORY, str(gameId))
     if not os.path.exists(gameDirectoryPath):
@@ -47,6 +54,7 @@ def handler(summonerName):
             summoners.append(player['summonerName'])
     except KeyError:
         print "Error getting summoner names"
+        return
         
     print "Summoners:", summoners
     
@@ -57,9 +65,23 @@ def handler(summonerName):
     for summoner in summoners:
         jsonOutputPath = os.path.join(gameDirectoryPath, "%s.json" % summoner)
         summonerUrlName = urllib.quote(summoner)
-        recentGameData = legendaryApi.getRecentGamesBySummonerName(summonerUrlName)
+        
+        gameIdExists = False
+        while not gameIdExists:
+            recentGameData = legendaryApi.getRecentGamesBySummonerName(summonerUrlName)
+            gameIdExists = gameIdExistsInRecentGames(gameId, recentGameData)
+            if not gameIdExists:
+                print "Game id %s is not in %s's recent history. Sleeping for %s and retrying" % (gameId, summoner, ADDITIONAL_SLEEP_TIME)
+                time.sleep(ADDITIONAL_SLEEP_TIME)
         
         with open(jsonOutputPath, 'w') as outfile:
             json.dump(recentGameData, outfile, indent=2, sort_keys=True)
+            print "Summoner game history saved to", jsonOutputPath
             
+def gameIdExistsInRecentGames(gameId, recentGameJsonData):
+    for gameStats in recentGameJsonData['gameStatistics']['array']:
+        if gameStats['gameId'] == gameId:
+            return True
+    
+    return False
     
