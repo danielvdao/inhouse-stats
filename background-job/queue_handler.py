@@ -61,6 +61,11 @@ def handler(summonerName):
     # sleep, then check all summoner's match histories for the game ID
     print "Sleeping for %s seconds" % SLEEP_TIME
     time.sleep(SLEEP_TIME)
+
+    saveSummonerStatsForGameId(gameId, summoners)
+    
+def saveSummonerStatsForGameId(gameId, summoners):
+    gameDirectoryPath = os.path.join(DATA_DIRECTORY, str(gameId))
     
     for summoner in summoners:
         jsonOutputPath = os.path.join(gameDirectoryPath, "%s.json" % summoner)

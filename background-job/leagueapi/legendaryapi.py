@@ -55,7 +55,7 @@ def getInProgressGameBySummonerName(summonerName):
         return jsonData
     
 def getRecentGamesBySummonerName(summonerName):
-    accountId = self.getAccountIdBySummonerName(summonerName)
+    accountId = getAccountIdBySummonerName(summonerName)
     if accountId == None:
         return None
     

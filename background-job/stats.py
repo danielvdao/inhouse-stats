@@ -1,11 +1,36 @@
 from db import mongo_dao
 from leagueapi import legendaryapi
+from pytz import timezone
+import pytz
+from datetime import datetime
 
 BLUE_TEAM_ID = 100
 PURPLE_TEAM_ID = 200
 
+DEFAULT_TIME_ZONE = 'US/Pacific'
+
 def getTotalGames():
     return len(mongo_dao.getAllGameIds())
+    
+def getAllGamesWithDate():
+    """Returns a list of tuples of (game date, game id)
+    """
+    gameList = []
+    
+    gameIds = mongo_dao.getAllGameIds()
+    for gameId in gameIds:
+        # the time is stored in game results
+        gameResults = mongo_dao.getResultsForGameId(gameId)
+        
+        # we only need one game result to get the time, so break after 1
+        for gameResult in gameResults:
+            createDateString = gameResult['createDate']
+            createDatetime = _convertUtcDatetimeStringToDatetimeWithTimeZone(createDateString, DEFAULT_TIME_ZONE)
+            gameList.append((createDatetime, gameId))
+            break
+    
+    # sort
+    return sorted(gameList, key=lambda game: game[0])
 
 def getNumberOfGamesChampionIsPicked(championName):
     championId = legendaryapi.getChampionIdFromName(championName)
@@ -83,6 +108,23 @@ def getCompleteGameInfo(gameId):
     """
     pass
     
+def getSummonerStatsForGameId(gameId, summonerName):
+    """
+    Level
+    KDA
+    CS
+    Gold earned
+    Damage dealt to champions
+    Wards placed
+    Jungle creeps killed
+    """
+    summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
+    summonerStats = {}
+    
+    # TODO
+    
+    return summonerStats
+    
 # HELPERS
 
 def _didPlayerWinFromResult(gameResult):
@@ -93,3 +135,14 @@ def _didPlayerWinFromResult(gameResult):
             return False
             
     raise Exception('Game result did not have WIN or LOSE:\n %s' % gameResult)
+    
+def _convertUtcDatetimeStringToDatetimeWithTimeZone(utcString, timeZoneString):
+    """UTC string is Riot's format.
+    """
+    unlocalizedDatetime = datetime.strptime(utcString, "%b %d, %Y %X %p")
+    utcDatetime = pytz.utc.localize(unlocalizedDatetime)
+    
+    targetTimeZone = timezone(timeZoneString)
+    targetDatetime = utcDatetime.astimezone(targetTimeZone)
+    
+    return targetDatetime
