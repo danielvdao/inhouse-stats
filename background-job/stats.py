@@ -123,13 +123,21 @@ def getCompleteGameInfo(gameId):
     """Returns a dictionary of game info.
     Format specified in google doc TODO
     """
-    pass
+    # TODO game specific info. we only have summoner specific data for now.
+    gameInfo = []
+    
+    gameResults = mongo_dao.getResultsForGameId(gameId)
+    for gameResult in gameResults:
+        summonerId = gameResult['userId']
+        gameInfo.append(getSummonerStatsForGameId(gameId, summonerId))
+    
+    return gameInfo
     
 def getSummonerStatsForGameIdBySummonerName(gameId, summonerName):
     summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
     return getSummonerStatsForGameId(gameId, summonerId, summonerName)
     
-def getSummonerStatsForGameId(gameId, summonerId, summonerName):
+def getSummonerStatsForGameId(gameId, summonerId, summonerName=None):
     """
     Champion
     Win?
@@ -143,6 +151,8 @@ def getSummonerStatsForGameId(gameId, summonerId, summonerName):
     Wards placed
     """
     summonerStats = {}
+    if summonerName is None:
+        summonerName = legendaryapi.getSummonerNameByAccountId(summonerId)
     
     gameResults = mongo_dao.getResultsForGameId(gameId)
     gameResult = _getResultFromGameResultsBySummonerId(gameResults, summonerId)
