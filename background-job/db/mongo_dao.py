@@ -31,3 +31,12 @@ def getAllGameIds():
     
 def getGameById(gameId):
     return db[GAME_COLLECTION_NAME].find_one({"_id": gameId})
+    
+def getResultsForGameId(gameId):
+    results = []
+    
+    cursor = db[GAME_RESULT_COLLECTION_NAME].find({'gameId': gameId})
+    for element in cursor:
+        results.append(element)
+    
+    return results
