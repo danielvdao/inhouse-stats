@@ -68,6 +68,9 @@ def saveSummonerStatsForGameId(gameId, summoners):
     gameDirectoryPath = os.path.join(DATA_DIRECTORY, str(gameId))
     
     for summoner in summoners:
+        summonerId = legendaryapi.getAccountIdBySummonerName(summoner)
+        mongo_dao.insertSummoner(summonerId, summoner)
+        
         jsonOutputPath = os.path.join(gameDirectoryPath, "%s.json" % summoner)
         summonerUrlName = urllib.quote(summoner)
         
