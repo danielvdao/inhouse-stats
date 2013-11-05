@@ -9,6 +9,23 @@ PURPLE_TEAM_ID = 200
 
 DEFAULT_TIME_ZONE = 'US/Pacific'
 
+# stat names
+
+WIN = "WIN"
+LOSE = "LOSE"
+LEVEL = "LEVEL"
+
+# if these are not present, assume value is 0
+KILLS = "CHAMPIONS_KILLED"
+DEATHS = "NUM_DEATHS"
+ASSISTS = "ASSISTS"
+DAMAGE_TAKEN = "TOTAL_DAMAGE_TAKEN"
+WARDS_PLACED = "WARD_PLACED"
+GOLD_EARNED = "GOLD_EARNED"
+MINIONS_KILLED = "MINIONS_KILLED"
+DAMAGE_DEALT_TO_CHAMPIONS = "TOTAL_DAMAGE_DEALT_TO_CHAMPIONS"
+JUNGLE_MONSTERS_KILLED = "NEUTRAL_MINIONS_KILLED"
+
 def getTotalGames():
     return len(mongo_dao.getAllGameIds())
     
@@ -108,22 +125,60 @@ def getCompleteGameInfo(gameId):
     """
     pass
     
-def getSummonerStatsForGameId(gameId, summonerName):
+def getSummonerStatsForGameIdBySummonerName(gameId, summonerName):
+    summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
+    return getSummonerStatsForGameId(gameId, summonerId, summonerName)
+    
+def getSummonerStatsForGameId(gameId, summonerId, summonerName):
     """
+    Champion
+    Win?
     Level
     KDA
     CS
+    Jungle creeps killed
     Gold earned
     Damage dealt to champions
+    Damage taken
     Wards placed
-    Jungle creeps killed
     """
-    summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
     summonerStats = {}
     
-    # TODO
+    gameResults = mongo_dao.getResultsForGameId(gameId)
+    gameResult = _getResultFromGameResultsBySummonerId(gameResults, summonerId)
+    if gameResult is None:
+        return None
+        
+    statsArray = gameResult['statistics']['array']
+    
+    summonerStats['Summoner'] = summonerName
+    summonerStats['Game ID'] = gameId
+    summonerStats['Game Date'] = str(_convertUtcDatetimeStringToDatetimeWithTimeZone(gameResult['createDate'], DEFAULT_TIME_ZONE))
+    summonerStats['Champion'] = legendaryapi.getChampionNameFromId(gameResult['championId'])
+    summonerStats['Won'] = _getStatisticByName(statsArray, WIN) == 1
+    summonerStats['Level'] = _getStatisticByName(statsArray, LEVEL)
+    summonerStats['Kills'] = _getStatisticByName(statsArray, KILLS)
+    summonerStats['Deaths'] = _getStatisticByName(statsArray, DEATHS)
+    summonerStats['Assists'] = _getStatisticByName(statsArray, ASSISTS)
+    summonerStats['Jungle Monsters Killed'] = _getStatisticByName(statsArray, JUNGLE_MONSTERS_KILLED)
+    summonerStats['Minions Killed'] = _getStatisticByName(statsArray, MINIONS_KILLED) + summonerStats['Jungle Monsters Killed']
+    summonerStats['Gold Earned'] = _getStatisticByName(statsArray, GOLD_EARNED)
+    summonerStats['Damage Dealt To Champions'] = _getStatisticByName(statsArray, DAMAGE_DEALT_TO_CHAMPIONS)
+    summonerStats['Damage Taken'] = _getStatisticByName(statsArray, DAMAGE_TAKEN)
+    summonerStats['Wards Placed'] = _getStatisticByName(statsArray, WARDS_PLACED)
     
     return summonerStats
+    
+def getSummonerStatsForAllGames(summonerName):
+    summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
+    
+    stats = []
+    for gameId in mongo_dao.getAllGameIds():
+        singleGameStats = getSummonerStatsForGameId(gameId, summonerId, summonerName)
+        if singleGameStats is not None:
+            stats.append(singleGameStats)
+        
+    return stats
     
 # HELPERS
 
@@ -146,3 +201,18 @@ def _convertUtcDatetimeStringToDatetimeWithTimeZone(utcString, timeZoneString):
     targetDatetime = utcDatetime.astimezone(targetTimeZone)
     
     return targetDatetime
+    
+def _getStatisticByName(statsArray, statName):
+    """If a stat can't be found, we assume its value is 0.
+    """
+    for stat in statsArray:
+        if stat['statType'] == statName:
+            return stat['value']
+    return 0
+    
+def _getResultFromGameResultsBySummonerId(gameResults, summonerId):
+    for gameResult in gameResults:
+        if gameResult['userId'] == summonerId:
+            return gameResult
+            
+    return None
