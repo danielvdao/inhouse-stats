@@ -80,6 +80,16 @@ def getNumberOfGamesChampionIsBanned(championName):
 def getNumberOfGamesChampionIsContested(championName):
     return getNumberOfGamesChampionIsPicked(championName) + getNumberOfGamesChampionIsBanned(championName)
     
+def getNumberOfGamesChampionWon(championName):
+    championId = legendaryapi.getChampionIdFromName(championName)
+    gameResults = mongo_dao.getGameResultsIncludingChampion(championId)
+    
+    wins = 0
+    for gameResult in gameResults:
+        statsArray = gameResult['statistics']['array']
+        wins = wins + _getStatisticByName(statsArray, WIN)
+    return wins
+    
 def getChampionPickRate(championName):
     return 1.0 * getNumberOfGamesChampionIsPicked(championName) / getTotalGames()
 
@@ -88,6 +98,27 @@ def getChampionBanRate(championName):
 
 def getChampionContestRate(championName):
     return 1.0 * getNumberOfGamesChampionIsContested(championName) / getTotalGames()
+    
+def getChampionWinRate(championName):
+    return 1.0 * getNumberOfGamesChampionWon(championName) / getNumberOfGamesChampionIsPicked(championName)
+    
+def getAllChampionWinRates(minGames=1):
+    """Returns a sorted list of champions, wins, losses, and winrate.
+    """
+    winrates = []
+    
+    for championId in legendaryapi.getAllChampionIds():
+        championName = legendaryapi.getChampionNameFromId(championId)
+        numGames = getNumberOfGamesChampionIsPicked(championName)
+        if numGames >= minGames:
+            gamesWon = getNumberOfGamesChampionWon(championName)
+            gamesLost = numGames - gamesWon
+            winrate = getChampionWinRate(championName)
+            winrateEntry = championName, gamesWon, gamesLost, winrate
+            
+            winrates.append(winrateEntry)
+            
+    return sorted(winrates, key=lambda winrate: winrate[3], reverse=True)
     
 def getBlueSideWins():
     blueSideWins = 0

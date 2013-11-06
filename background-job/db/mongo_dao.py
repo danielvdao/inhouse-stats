@@ -53,3 +53,12 @@ def getResultsForGameId(gameId):
         results.append(element)
     
     return results
+    
+def getGameResultsIncludingChampion(championId):
+    results = []
+    
+    cursor = db[GAME_RESULT_COLLECTION_NAME].find({'championId':championId})
+    for element in cursor:
+        results.append(element)
+    
+    return results

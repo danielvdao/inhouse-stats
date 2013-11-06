@@ -74,3 +74,9 @@ def getChampionNameFromId(championId):
 # TODO ignore case for this
 def getChampionIdFromName(championName):
     return championNameToIdMap[championName]
+    
+def getAllChampionNames():
+    return championNameToIdMap.keys()
+    
+def getAllChampionIds():
+    return championIdToNameMap.keys()
