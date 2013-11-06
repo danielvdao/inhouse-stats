@@ -62,3 +62,15 @@ def getGameResultsIncludingChampion(championId):
         results.append(element)
     
     return results
+
+def getGameIdsMissingResults():
+    """Checks to see if all game ids have results. Return a list of game ids that don't.
+    """
+    missingGameIds = []
+    
+    allGameIds = getAllGameIds()
+    for gameId in allGameIds:
+        if not getResultsForGameId(gameId):
+            missingGameIds.append(gameId)
+    
+    return missingGameIds

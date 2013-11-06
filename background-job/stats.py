@@ -36,6 +36,7 @@ def getAllGamesWithDate():
     
     gameIds = mongo_dao.getAllGameIds()
     for gameId in gameIds:
+        print gameId
         # the time is stored in game results
         gameResults = mongo_dao.getResultsForGameId(gameId)
         
@@ -43,7 +44,7 @@ def getAllGamesWithDate():
         for gameResult in gameResults:
             createDateString = gameResult['createDate']
             createDatetime = _convertUtcDatetimeStringToDatetimeWithTimeZone(createDateString, DEFAULT_TIME_ZONE)
-            gameList.append((createDatetime, gameId))
+            gameList.append((str(createDatetime), gameId))
             break
     
     # sort
@@ -164,6 +165,19 @@ def getCompleteGameInfo(gameId):
     
     return gameInfo
     
+def getSummonerNamesForGameId(gameId):
+    game = mongo_dao.getGameById(gameId)
+    
+    summoners = []
+    playerData = []
+    playerData.extend(game['game']['teamOne']['array'])
+    playerData.extend(game['game']['teamTwo']['array'])
+    
+    for player in playerData:
+        summoners.append(player['summonerName'])
+            
+    return summoners
+    
 def getSummonerStatsForGameIdBySummonerName(gameId, summonerName):
     summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
     return getSummonerStatsForGameId(gameId, summonerId, summonerName)
@@ -183,7 +197,7 @@ def getSummonerStatsForGameId(gameId, summonerId, summonerName=None):
     """
     summonerStats = {}
     if summonerName is None:
-        summonerName = legendaryapi.getSummonerNameByAccountId(summonerId)
+        summonerName = legendaryapi.getSummonerNameByAccountId(summonerId) # TODO REMOVE THIS API CALL
     
     gameResults = mongo_dao.getResultsForGameId(gameId)
     gameResult = _getResultFromGameResultsBySummonerId(gameResults, summonerId)
