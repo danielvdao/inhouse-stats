@@ -10,8 +10,6 @@ SLEEP_TIME = 7200 # 2 hours in seconds
 ADDITIONAL_SLEEP_TIME = 3600 # 1 hour in seconds
 
 def handler(summonerName):
-    print "Processing", summonerName
-
     currentGameData = legendaryapi.getInProgressGameBySummonerName(summonerName)
     if currentGameData == None:
         print "Unable to get current game data for %s. Player may not be in a game." % summonerName
