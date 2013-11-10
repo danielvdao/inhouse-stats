@@ -112,14 +112,32 @@ def getAllChampionWinRates(minGames=1):
         championName = legendaryapi.getChampionNameFromId(championId)
         numGames = getNumberOfGamesChampionIsPicked(championName)
         if numGames >= minGames:
-            gamesWon = getNumberOfGamesChampionWon(championName)
-            gamesLost = numGames - gamesWon
-            winrate = getChampionWinRate(championName)
-            winrateEntry = championName, gamesWon, gamesLost, winrate
+            winrateEntry = {}
+            winrateEntry['champion'] = championName
+            winrateEntry['won'] = getNumberOfGamesChampionWon(championName)
+            winrateEntry['lost'] = numGames - winrateEntry['won']
+            winrateEntry['winrate'] = getChampionWinRate(championName)
             
             winrates.append(winrateEntry)
             
-    return sorted(winrates, key=lambda winrate: winrate[3], reverse=True)
+    return sorted(winrates, key=lambda winrate: winrate['winrate'], reverse=True)
+    
+def getAllChampionContestRates(minGames=1):
+    contestRates = []
+    
+    for championId in legendaryapi.getAllChampionIds():
+        championName = legendaryapi.getChampionNameFromId(championId)
+        numGames = getNumberOfGamesChampionIsContested(championName)
+        if numGames >= minGames:
+            contestRateEntry = {}
+            contestRateEntry['champion'] = championName
+            contestRateEntry['picked'] = getNumberOfGamesChampionIsPicked(championName)
+            contestRateEntry['banned'] = getNumberOfGamesChampionIsBanned(championName)
+            contestRateEntry['contested'] = getNumberOfGamesChampionIsContested(championName)
+            contestRateEntry['contestRate'] = getChampionContestRate(championName)
+            contestRates.append(contestRateEntry)
+    
+    return sorted(contestRates, key=lambda contestRate: contestRate['contestRate'], reverse=True)
     
 def getBlueSideWins():
     blueSideWins = 0
