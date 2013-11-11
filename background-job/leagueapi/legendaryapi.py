@@ -28,7 +28,6 @@ init()
 
 def getAccountIdBySummonerName(summonerName):
     url = getSummonerByNameUrl % summonerName
-    print "Getting", url
     jsonObject = json.load(urllib2.urlopen(url))
     if 'acctId' in jsonObject:
         return jsonObject['acctId']
@@ -37,7 +36,6 @@ def getAccountIdBySummonerName(summonerName):
         
 def getSummonerNameByAccountId(accountId):
     url = getPublicSummonerDataByAccountIdUrl % accountId
-    print "Getting", url
     jsonObject = json.load(urllib2.urlopen(url))
     
     if 'summoner' in jsonObject:
@@ -47,7 +45,6 @@ def getSummonerNameByAccountId(accountId):
     
 def getInProgressGameBySummonerName(summonerName):
     url = retrieveInProgressGameBySummonerNameUrl % summonerName
-    print "Getting", url
     jsonData = json.load(urllib2.urlopen(url))
     if 'error' in jsonData:
         return None
@@ -60,12 +57,10 @@ def getRecentGamesBySummonerName(summonerName):
         return None
     
     url = getRecentGamesByAccountIdUrl % accountId
-    print "Getting", url
     return json.load(urllib2.urlopen(url))
     
 def getRecentGamesByAccountId(accountId):
     url = getRecentGamesByAccountIdUrl % accountId
-    print "Getting", url
     return json.load(urllib2.urlopen(url))
     
 def getChampionNameFromId(championId):

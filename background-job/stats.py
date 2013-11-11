@@ -139,6 +139,10 @@ def getAllChampionContestRates(minGames=1):
     
     return sorted(contestRates, key=lambda contestRate: contestRate['contestRate'], reverse=True)
     
+def getAllSummonerWinRates(minGames=1):
+    # TODO sort this by wins instead of %?
+    pass
+    
 def getBlueSideWins():
     blueSideWins = 0
     
