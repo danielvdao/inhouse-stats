@@ -6,8 +6,8 @@ import urllib
 from db import mongo_dao
 
 DATA_DIRECTORY = '/drive1/inhouse-data-dump'
-SLEEP_TIME = 7200 # 2 hours in seconds
-ADDITIONAL_SLEEP_TIME = 3600 # 1 hour in seconds
+SLEEP_TIME = 1200 # 20 minutes in seconds
+ADDITIONAL_SLEEP_TIME = 600 # 10 minutes in seconds
 
 def handler(summonerName):
     currentGameData = legendaryapi.getInProgressGameBySummonerName(summonerName)
