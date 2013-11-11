@@ -74,3 +74,15 @@ def getGameIdsMissingResults():
             missingGameIds.append(gameId)
     
     return missingGameIds
+    
+def getSummonerNameFromId(summonerId):
+    try:
+        return db[SUMMONERS_COLLECTION_NAME].find_one({"_id": summonerId})['name']
+    except:
+        return None
+
+def getSummonerIdFromName(summonerName):
+    try:
+        return db[SUMMONERS_COLLECTION_NAME].find_one({"name": summonerName})['_id']
+    except:
+        return None
