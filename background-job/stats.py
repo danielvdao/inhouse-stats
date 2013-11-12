@@ -36,7 +36,6 @@ def getAllGamesWithDate():
     
     gameIds = mongo_dao.getAllGameIds()
     for gameId in gameIds:
-        print gameId
         # the time is stored in game results
         gameResults = mongo_dao.getResultsForGameId(gameId)
         

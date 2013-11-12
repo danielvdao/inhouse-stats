@@ -12,3 +12,6 @@ def getAllChampionWinRates(minGames=1):
     dataFrame = DataFrame(winRates, columns=["champion", "won", "lost", "winrate"])
     dataFrame = dataFrame.set_index("champion")
     return dataFrame.to_string()
+    
+def getCompleteGameInfo(gameId):
+    return stats.getCompleteGameInfo(gameId)

@@ -24,17 +24,20 @@ def insertGameResult(gameResultJsonData):
     db[GAME_RESULT_COLLECTION_NAME].insert(gameResultJsonData)
     
 def insertSummoner(summonerId, summonerName):
+    # remove all white space and make whole string lowercase
+    normalizedName = "".join(summonerName.split()).lower()
     summoner = {
         '_id': summonerId,
-        'name': summonerName
+        'name': summonerName,
+        'normalized_name': normalizedName
     }
     
     try:
         db[SUMMONERS_COLLECTION_NAME].insert(summoner)
     except DuplicateKeyError:
         pass # do nothing
-    
 def getAllGameIds():
+    
     cursor = db[GAME_COLLECTION_NAME].find(fields={"_id": True})
     
     gameIds = []
