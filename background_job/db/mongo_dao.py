@@ -36,8 +36,8 @@ def insertSummoner(summonerId, summonerName):
         db[SUMMONERS_COLLECTION_NAME].insert(summoner)
     except DuplicateKeyError:
         pass # do nothing
+        
 def getAllGameIds():
-    
     cursor = db[GAME_COLLECTION_NAME].find(fields={"_id": True})
     
     gameIds = []
