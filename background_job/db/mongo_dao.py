@@ -85,7 +85,8 @@ def getSummonerNameFromId(summonerId):
         return None
 
 def getSummonerIdFromName(summonerName):
+    normalizedName = "".join(summonerName.split()).lower()
     try:
-        return db[SUMMONERS_COLLECTION_NAME].find_one({"name": summonerName})['_id']
+        return db[SUMMONERS_COLLECTION_NAME].find_one({"normalized_name": normalizedName})['_id']
     except:
         return None

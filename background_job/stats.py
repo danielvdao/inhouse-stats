@@ -200,7 +200,7 @@ def getSummonerNamesForGameId(gameId):
     return summoners
     
 def getSummonerStatsForGameIdBySummonerName(gameId, summonerName):
-    summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
+    summonerId = mongo_dao.getSummonerIdFromName(summonerName)
     return getSummonerStatsForGameId(gameId, summonerId, summonerName)
     
 def getSummonerStatsForGameId(gameId, summonerId, summonerName=None):
@@ -218,7 +218,7 @@ def getSummonerStatsForGameId(gameId, summonerId, summonerName=None):
     """
     summonerStats = {}
     if summonerName is None:
-        summonerName = legendaryapi.getSummonerNameByAccountId(summonerId) # TODO REMOVE THIS API CALL
+        summonerName = mongo_dao.getSummonerNameFromId(summonerId) # TODO REMOVE THIS API CALL
     
     gameResults = mongo_dao.getResultsForGameId(gameId)
     gameResult = _getResultFromGameResultsBySummonerId(gameResults, summonerId)
@@ -246,7 +246,7 @@ def getSummonerStatsForGameId(gameId, summonerId, summonerName=None):
     return summonerStats
     
 def getSummonerStatsForAllGames(summonerName):
-    summonerId = legendaryapi.getAccountIdBySummonerName(summonerName)
+    summonerId = mongo_dao.getSummonerIdFromName(summonerName)
     
     stats = []
     for gameId in mongo_dao.getAllGameIds():
