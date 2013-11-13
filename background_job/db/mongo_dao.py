@@ -65,6 +65,15 @@ def getGameResultsIncludingChampion(championId):
         results.append(element)
     
     return results
+    
+def getGameResultsForSummonerName(summonerName):
+    summonerId = getSummonerIdFromName(summonerName)
+    gameResults = []
+    
+    for cursor in db[GAME_RESULT_COLLECTION_NAME].find({"userId": summonerId}):
+        gameResults.append(cursor)
+    
+    return gameResults
 
 def getGameIdsMissingResults():
     """Checks to see if all game ids have results. Return a list of game ids that don't.
@@ -88,5 +97,12 @@ def getSummonerIdFromName(summonerName):
     normalizedName = "".join(summonerName.split()).lower()
     try:
         return db[SUMMONERS_COLLECTION_NAME].find_one({"normalized_name": normalizedName})['_id']
+    except:
+        return None
+        
+def getStylizedSummonerName(summonerName):
+    normalizedName = "".join(summonerName.split()).lower()
+    try:
+        return db[SUMMONERS_COLLECTION_NAME].find_one({"normalized_name": normalizedName})['name']
     except:
         return None

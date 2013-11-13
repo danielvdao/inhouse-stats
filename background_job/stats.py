@@ -139,8 +139,49 @@ def getAllChampionContestRates(minGames=1):
     return sorted(contestRates, key=lambda contestRate: contestRate['contestRate'], reverse=True)
     
 def getAllSummonerWinRates(minGames=1):
-    # TODO sort this by wins instead of %?
-    pass
+    summonerWinrates = []
+
+    summonerWinrateDict = {}
+    
+    for gameId in mongo_dao.getAllGameIds():
+        for gameResult in mongo_dao.getResultsForGameId(gameId):
+            statsArray = gameResult['statistics']['array']
+            summonerId = gameResult['userId']
+            summonerName = mongo_dao.getSummonerNameFromId(summonerId)
+            won = _getStatisticByName(statsArray, WIN) == 1
+            
+            try:
+                summonerWinrateEntry = summonerWinrateDict[summonerName]
+                if won:
+                    summonerWinrateEntry['Wins'] = summonerWinrateEntry['Wins'] + 1
+                else:
+                    summonerWinrateEntry['Losses'] = summonerWinrateEntry['Losses'] + 1
+            except KeyError:
+                summonerWinrateEntry = {}
+                summonerWinrateEntry['Summoner'] = summonerName
+                summonerWinrateEntry['Wins'] = 1 if won else 0
+                summonerWinrateEntry['Losses'] = 1 - summonerWinrateEntry['Wins']
+                
+                summonerWinrateDict[summonerName] = summonerWinrateEntry
+
+    for summonerName, summonerWinrateEntry in summonerWinrateDict.iteritems():
+        # calculate winrates
+        wins = summonerWinrateEntry['Wins']
+        losses = summonerWinrateEntry['Losses']
+        totalGames = wins + losses
+        
+        if totalGames < minGames:
+            continue
+            
+        summonerWinrates.append(summonerWinrateEntry)
+        
+        if losses == 0:
+            summonerWinrateEntry['Winrate'] = 1.0
+        else:
+            summonerWinrateEntry['Winrate'] = 1.0 * wins / totalGames
+    
+    # TODO sort by winrate?
+    return sorted(summonerWinrates, key=lambda summonerWinrateEntry: summonerWinrateEntry['Winrate'], reverse=True)
     
 def getBlueSideWins():
     blueSideWins = 0
@@ -245,14 +286,110 @@ def getSummonerStatsForGameId(gameId, summonerId, summonerName=None):
     
     return summonerStats
     
-def getSummonerStatsForAllGames(summonerName):
+def getSummonerStats(summonerName):
     summonerId = mongo_dao.getSummonerIdFromName(summonerName)
     
-    stats = []
-    for gameId in mongo_dao.getAllGameIds():
-        singleGameStats = getSummonerStatsForGameId(gameId, summonerId, summonerName)
-        if singleGameStats is not None:
-            stats.append(singleGameStats)
+    stats = {}
+    gameResults = mongo_dao.getGameResultsForSummonerName(summonerName)
+    
+    totalGames = len(gameResults)
+    wins = 0
+    losses = 0
+    totalKills = []
+    totalDeaths = []
+    totalAssists = []
+    
+    kdas = []
+    
+    # champ -> [kills]
+    #          [deaths]
+    #          [assists]
+    #          [cs]
+    #          [damage dealt]
+    #          [damage taken]
+    #          [wards bought]
+    championStats = {}
+    
+    for gameResult in gameResults:
+        statsArray = gameResult['statistics']['array']
+        
+        if _getStatisticByName(statsArray, WIN) == 1:
+            wins = wins + 1
+            won = True
+        else:
+            losses = losses + 1
+            won = False
+        
+        totalKills.append(_getStatisticByName(statsArray, KILLS))
+        totalDeaths.append(_getStatisticByName(statsArray, DEATHS))
+        totalAssists.append(_getStatisticByName(statsArray, ASSISTS))
+        
+        kills =_getStatisticByName(statsArray, KILLS)
+        deaths = _getStatisticByName(statsArray, DEATHS)
+        assists = _getStatisticByName(statsArray, ASSISTS)
+        cs = _getStatisticByName(statsArray, MINIONS_KILLED) + _getStatisticByName(statsArray, JUNGLE_MONSTERS_KILLED)
+        jungleCs = _getStatisticByName(statsArray, JUNGLE_MONSTERS_KILLED)
+        damageDealt = _getStatisticByName(statsArray, DAMAGE_DEALT_TO_CHAMPIONS)
+        damageTaken = _getStatisticByName(statsArray, DAMAGE_TAKEN)
+        wardsPlaced = _getStatisticByName(statsArray, WARDS_PLACED)
+        
+        championName = legendaryapi.getChampionNameFromId(gameResult['championId'])
+        
+        if championName not in championStats:
+            championStatsEntry = {}
+            championStatsEntry['Wins'] = 0
+            championStatsEntry['Losses'] = 0
+            championStatsEntry['Kills'] = []
+            championStatsEntry['Deaths'] = []
+            championStatsEntry['Assists'] = []
+            championStatsEntry['Minions Killed'] = []
+            championStatsEntry['Jungle Monsters Killed'] = []
+            championStatsEntry['Damage Dealt To Champions'] = []
+            championStatsEntry['Damage Taken'] = []
+            championStatsEntry['Wards Placed'] = []
+            
+            championStats[championName] = championStatsEntry
+        
+        championStatsEntry = championStats[championName]
+        if won:
+            championStatsEntry['Wins'] = championStatsEntry['Wins'] + 1
+        else:
+            championStatsEntry['Losses'] = championStatsEntry['Losses'] + 1
+        championStatsEntry['Kills'].append(kills)
+        championStatsEntry['Deaths'].append(deaths)
+        championStatsEntry['Assists'].append(assists)
+        championStatsEntry['Minions Killed'].append(cs)
+        championStatsEntry['Jungle Monsters Killed'].append(jungleCs)
+        championStatsEntry['Damage Dealt To Champions'].append(damageDealt)
+        championStatsEntry['Damage Taken'].append(damageTaken)
+        championStatsEntry['Wards Placed'].append(wardsPlaced)
+        
+    championStatsList = []
+    stats['Summoner'] = mongo_dao.getStylizedSummonerName(summonerName)
+    stats['Total Games'] = len(gameResults)
+    stats['Wins'] = wins
+    stats['Losses'] = losses
+    stats['Average Kills'] = _getAverage(totalKills)
+    stats['Average Deaths'] = _getAverage(totalDeaths)
+    stats['Average Assists'] = _getAverage(totalAssists)
+    # TODO add winrate
+    
+    # TODO add win %
+    for championName, championStatsEntry in championStats.iteritems():
+        championStatsEntry['Champion'] = championName
+        championStatsEntry['Kills'] = _getAverage(championStatsEntry['Kills'])
+        championStatsEntry['Deaths'] = _getAverage(championStatsEntry['Deaths'])
+        championStatsEntry['Assists'] = _getAverage(championStatsEntry['Assists'])
+        championStatsEntry['Minions Killed'] = _getAverage(championStatsEntry['Minions Killed'])
+        championStatsEntry['Jungle Monsters Killed'] = _getAverage(championStatsEntry['Jungle Monsters Killed'])
+        championStatsEntry['Damage Dealt To Champions'] = _getAverage(championStatsEntry['Damage Dealt To Champions'])
+        championStatsEntry['Damage Taken'] = _getAverage(championStatsEntry['Damage Taken'])
+        championStatsEntry['Wards Placed'] = _getAverage(championStatsEntry['Wards Placed'])
+        
+        championStatsList.append(championStatsEntry)
+        
+    championStatsList = sorted(championStatsList, key=lambda championStatsEntry: championStatsEntry['Wins'], reverse=True)
+    stats['Champion stats'] = championStatsList
         
     return stats
     
@@ -292,3 +429,7 @@ def _getResultFromGameResultsBySummonerId(gameResults, summonerId):
             return gameResult
             
     return None
+    
+def _getAverage(l):
+    # rounds to 2 digits
+    return round(sum(l) / float(len(l)), 2)
