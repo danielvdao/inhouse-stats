@@ -109,14 +109,21 @@ def getAllChampionWinRates(minGames=1):
     
     for championId in legendaryapi.getAllChampionIds():
         championName = legendaryapi.getChampionNameFromId(championId)
-        numGames = getNumberOfGamesChampionIsPicked(championName)
+        gameResults = mongo_dao.getGameResultsIncludingChampion(championId)
+        numGames = len(gameResults)
         if numGames >= minGames:
             winrateEntry = {}
             winrateEntry['champion'] = championName
-            winrateEntry['won'] = getNumberOfGamesChampionWon(championName)
-            winrateEntry['lost'] = numGames - winrateEntry['won']
-            winrateEntry['winrate'] = getChampionWinRate(championName)
+            winrateEntry['won'] = 0
+            winrateEntry['lost'] = 0
             
+            for gameResult in gameResults:
+                if _getStatisticByNameFromGameResult(gameResult, WIN):
+                    winrateEntry['won'] += 1
+                else :
+                    winrateEntry['lost'] += 1
+                
+            winrateEntry['winrate'] = 1.0 * winrateEntry['won'] / numGames
             winrates.append(winrateEntry)
             
     return sorted(winrates, key=lambda winrate: winrate['winrate'], reverse=True)
@@ -180,7 +187,6 @@ def getAllSummonerWinRates(minGames=1):
         else:
             summonerWinrateEntry['Winrate'] = 1.0 * wins / totalGames
     
-    # TODO sort by winrate?
     return sorted(summonerWinrates, key=lambda summonerWinrateEntry: summonerWinrateEntry['Winrate'], reverse=True)
     
 def getBlueSideWins():
@@ -422,6 +428,9 @@ def _getStatisticByName(statsArray, statName):
         if stat['statType'] == statName:
             return stat['value']
     return 0
+    
+def _getStatisticByNameFromGameResult(gameResult, statName):
+    return _getStatisticByName(gameResult['statistics']['array'], statName)
     
 def _getResultFromGameResultsBySummonerId(gameResults, summonerId):
     for gameResult in gameResults:
