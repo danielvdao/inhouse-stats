@@ -57,6 +57,22 @@ def getResultsForGameId(gameId):
     
     return results
     
+def getAllGamesIncludingChampion(championId):
+    results = []
+    
+    cursor = db[GAME_COLLECTION_NAME].find(
+        {
+            '$or':[
+                {'game.playerChampionSelections.array.championId' : championId}, 
+                {'game.bannedChampions.array.championId': championId}
+             ]
+        }
+    )
+    for element in cursor:
+        results.append(element)
+    
+    return results
+    
 def getGameResultsIncludingChampion(championId):
     results = []
     

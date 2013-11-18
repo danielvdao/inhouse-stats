@@ -130,17 +130,26 @@ def getAllChampionWinRates(minGames=1):
     
 def getAllChampionContestRates(minGames=1):
     contestRates = []
+    totalGames = getTotalGames()
     
     for championId in legendaryapi.getAllChampionIds():
         championName = legendaryapi.getChampionNameFromId(championId)
-        numGames = getNumberOfGamesChampionIsContested(championName)
+        games = mongo_dao.getAllGamesIncludingChampion(championId)
+        numGames = len(games)
         if numGames >= minGames:
             contestRateEntry = {}
             contestRateEntry['champion'] = championName
-            contestRateEntry['picked'] = getNumberOfGamesChampionIsPicked(championName)
-            contestRateEntry['banned'] = getNumberOfGamesChampionIsBanned(championName)
-            contestRateEntry['contested'] = getNumberOfGamesChampionIsContested(championName)
-            contestRateEntry['contestRate'] = getChampionContestRate(championName)
+            contestRateEntry['picked'] = 0
+            contestRateEntry['banned'] = 0
+            
+            for game in games:
+                if _isChampionPickedInGame(game, championId):
+                    contestRateEntry['picked'] += 1
+                elif _isChampionBannedInGame(game, championId):
+                    contestRateEntry['banned'] += 1
+            
+            contestRateEntry['contested'] = numGames
+            contestRateEntry['contestRate'] = 1.0 * numGames / totalGames
             contestRates.append(contestRateEntry)
     
     return sorted(contestRates, key=lambda contestRate: contestRate['contestRate'], reverse=True)
@@ -438,6 +447,18 @@ def _getResultFromGameResultsBySummonerId(gameResults, summonerId):
             return gameResult
             
     return None
+    
+def _isChampionPickedInGame(game, championId):
+    for pick in game['game']['playerChampionSelections']['array']:
+        if championId == pick['championId']:
+            return True
+    return False
+    
+def _isChampionBannedInGame(game, championId):
+    for ban in game['game']['bannedChampions']['array']:
+        if championId == ban['championId']:
+            return True
+    return False
     
 def _getAverage(l):
     # rounds to 2 digits
