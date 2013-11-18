@@ -2,10 +2,15 @@ import stats
 from pandas import DataFrame
 
 def getAllChampionContestRates(minGames=1):
+    contestRateString = ""
+    contestRateString += "Total Games: %d\n\n" % stats.getTotalGames()
+    
     contestRates = stats.getAllChampionContestRates(minGames=minGames)
     dataFrame = DataFrame(contestRates, columns=(["champion", "picked", "banned", "contested", "contestRate"]))
     dataFrame = dataFrame.set_index("champion")
-    return dataFrame.to_string()
+    contestRateString += dataFrame.to_string()
+    
+    return contestRateString
     
 def getAllChampionWinRates(minGames=1):
     winRates = stats.getAllChampionWinRates(minGames=minGames)
