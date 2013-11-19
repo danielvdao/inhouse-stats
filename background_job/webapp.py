@@ -15,7 +15,7 @@ def index():
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/championContest")
     return returnString
     
-@app.route("/summoners")
+@app.route("/summoners/")
 def summonerWinRates():
     minGames = 1
     if request.args.get("minGames") is not None:
@@ -30,7 +30,7 @@ def summonerStats(name):
     returnString += stats_pp.getSummonerStats(name)
     return returnString
     
-@app.route("/champions", methods=['GET'])
+@app.route("/champions/", methods=['GET'])
 def championWinRates():
     minGames = 1
     if request.args.get("minGames") is not None:
@@ -39,7 +39,7 @@ def championWinRates():
     returnString += stats_pp.getAllChampionWinRates(minGames=minGames)
     return returnString    
     
-@app.route("/championContest", methods=['GET'])
+@app.route("/championContest/", methods=['GET'])
 def championContestRates():
     minGames = 1
     if request.args.get("minGames") is not None:

@@ -57,6 +57,15 @@ def getResultsForGameId(gameId):
     
     return results
     
+def getSummonersForGameId(gameId):
+    summoners = []
+    
+    game = db[GAME_COLLECTION_NAME].find_one({'_id': gameId})
+    for summoner in game['game']['playerChampionSelections']['array']:
+        summoners.append(summoner['summonerInternalName'])
+    
+    return summoners
+    
 def getAllGamesIncludingChampion(championId):
     results = []
     

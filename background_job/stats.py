@@ -408,6 +408,9 @@ def getSummonerStats(summonerName):
         
     return stats
     
+def getChampionStats(championName):
+    pass
+    
 # HELPERS
 
 def _didPlayerWinFromResult(gameResult):
