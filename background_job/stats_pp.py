@@ -40,10 +40,31 @@ def getSummonerStats(summonerName):
     
     championStats = summonerStats['Champion stats']
     dataFrame = DataFrame(championStats, columns=[
-        "Champion", "Wins", "Losses", "Kills", "Deaths", "Assists", "Minions Killed",
-        "Jungle Monsters Killed", "Damage Dealt To Champions", "Damage Taken", "Wards Placed"
+        "Champion", "Wins", "Losses", "Kills", "Deaths", "Assists", "CS",
+        "Jungle CS", "Damage Dealt", "Damage Taken", "Wards Placed"
     ])
     dataFrame = dataFrame.set_index("Champion")
+    statsString += dataFrame.to_string()
+    
+    return statsString
+    
+def getChampionStats(championName):
+    statsString = ""
+    
+    championStats = stats.getChampionStats(championName)
+    
+    statsString += "Champion: %s\n" % championStats['Champion']
+    statsString += "Picked: %s\n" % championStats['Picks']
+    statsString += "Banned: %s\n" % championStats['Bans']
+    statsString += "Contested: %s\n" % championStats['Contested']
+    statsString += "Record: %d-%d\n" % (championStats['Wins'], championStats['Losses'])
+    
+    summonerStats = championStats['Summoner stats']
+    dataFrame = DataFrame(summonerStats, columns=[
+        "Summoner", "Wins", "Losses", "Kills", "Deaths", "Assists", "CS",
+        "Jungle CS", "Damage Dealt", "Damage Taken", "Wards Placed"
+    ])
+    dataFrame = dataFrame.set_index("Summoner")
     statsString += dataFrame.to_string()
     
     return statsString

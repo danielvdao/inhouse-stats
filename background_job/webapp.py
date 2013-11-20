@@ -12,6 +12,7 @@ def index():
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/summoners/gar")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/champions")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/champions?minGames=5")
+    returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/champions/nasus")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/championContest")
     return returnString
     
@@ -37,7 +38,13 @@ def championWinRates():
         minGames = int(request.args.get("minGames"))
     returnString = _getCommonHtmlString()
     returnString += stats_pp.getAllChampionWinRates(minGames=minGames)
-    return returnString    
+    return returnString
+    
+@app.route("/champions/<name>")
+def championStats(name):
+    returnString = _getCommonHtmlString()
+    returnString += stats_pp.getChampionStats(name)
+    return returnString
     
 @app.route("/championContest/", methods=['GET'])
 def championContestRates():
@@ -57,5 +64,5 @@ def _surroundLink(link):
     return '<a href="%s">%s</a><br>' % (link, link)
     
 if __name__ == "__main__":
-    app.debug = False
+    app.debug = True
     app.run(host='0.0.0.0')

@@ -12,20 +12,6 @@ CHAMPION_MAPPING_FILENAME = os.path.join(os.path.dirname(__file__), "champion_ma
 championIdToNameMap = {}
 championNameToIdMap = {}
 
-def init():
-    # initialize champion lookup tables
-    with open(CHAMPION_MAPPING_FILENAME) as file:
-        for line in file:
-            lineElements = line.split("=>")
-            championId = int(lineElements[0].strip())
-            championName = lineElements[1].strip()
-            championIdToNameMap[championId] = championName
-            championNameToIdMap[championName] = championId
-            
-init()
-
-# END INIT
-
 def getAccountIdBySummonerName(summonerName):
     url = getSummonerByNameUrl % summonerName
     jsonObject = json.load(urllib2.urlopen(url))
@@ -66,12 +52,29 @@ def getRecentGamesByAccountId(accountId):
 def getChampionNameFromId(championId):
     return championIdToNameMap[championId]
 
-# TODO ignore case for this
 def getChampionIdFromName(championName):
-    return championNameToIdMap[championName]
+    return championNameToIdMap[_normalizeName(championName)]
     
 def getAllChampionNames():
     return championNameToIdMap.keys()
     
 def getAllChampionIds():
     return championIdToNameMap.keys()
+
+def _normalizeName(name):
+    return "".join(name.split()).lower()
+    
+# INIT
+
+def init():
+    # initialize champion lookup tables
+    with open(CHAMPION_MAPPING_FILENAME) as file:
+        for line in file:
+            lineElements = line.split("=>")
+            championId = int(lineElements[0].strip())
+            championName = lineElements[1].strip()
+            normalizedChampionName = _normalizeName(championName)
+            championIdToNameMap[championId] = championName
+            championNameToIdMap[normalizedChampionName] = championId
+            
+init()
