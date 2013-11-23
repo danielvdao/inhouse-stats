@@ -48,6 +48,20 @@ def getSummonerStats(summonerName):
     
     return statsString
     
+def getMultipleSummonersStats(summoners):
+    statsString = ""
+    
+    statsString += "Summoners: \n"
+    summonersStats = stats.getStatsForSummoners(summoners)
+    for summoner in summonersStats['summoners']:
+        statsString += summoner + "\n"
+    statsString += "\n"
+    
+    statsString += "Record: %d-%d\n" % (summonersStats['wins'], summonersStats['losses'])
+    statsString += "Winrate: %s\n" % summonersStats['winrate']
+    
+    return statsString
+    
 def getChampionStats(championName):
     statsString = ""
     

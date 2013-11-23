@@ -10,6 +10,7 @@ def index():
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/summoners")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/summoners?minGames=5")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/summoners/gar")
+    returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/summoners/gar,all3nvan,forthowin")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/champions")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/champions?minGames=5")
     returnString += _surroundLink("http://garsh0p.no-ip.biz:5000/champions/nasus")
@@ -27,8 +28,19 @@ def summonerWinRates():
     
 @app.route("/summoners/<name>")
 def summonerStats(name):
+    if ',' not in name:
+        return singleSummonerStats(name)
+    else:
+        return multipleSummomerNames(name.split(','))
+    
+def singleSummonerStats(name):
     returnString = _getCommonHtmlString()
     returnString += stats_pp.getSummonerStats(name)
+    return returnString
+    
+def multipleSummomerNames(names):
+    returnString = _getCommonHtmlString()
+    returnString += stats_pp.getMultipleSummonersStats(names)
     return returnString
     
 @app.route("/champions/", methods=['GET'])

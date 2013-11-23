@@ -492,6 +492,46 @@ def getChampionStats(championName):
     stats['Losses'] = losses
     
     return stats
+    
+def getStatsForSummoners(summoners):
+    if len(summoners) <= 1:
+        return None
+
+    gameIds = mongo_dao.getGameIdsWithSummonersOnSameTeam(summoners)
+    gameResults = []
+    for gameId in gameIds:
+        gameResults.extend(mongo_dao.getResultsForGameId(gameId))
+        
+    # prune gameResults down to results only including 1 summoner
+    summonerId = mongo_dao.getSummonerIdFromName(summoners[0])
+    gameResults = [gameResult for gameResult in gameResults if gameResult['userId'] == summonerId]
+    
+    print len(gameResults)
+    
+    stats = {}
+    
+    stats['summoners'] = summoners
+    stats['wins'] = 0
+    stats['losses'] = 0
+    
+    for gameResult in gameResults:
+        if _getStatisticByNameFromGameResult(gameResult, WIN) == 1:
+            stats['wins'] += 1
+        else:
+            stats['losses'] += 1
+    
+    # calculate winrate
+    if stats['wins'] == 0:
+        stats['winrate'] = 0
+    elif stats['losses'] == 0:
+        stats['winrate'] = 1.0
+    else:
+        stats['winrate'] = 1.0 * stats['wins'] / len(gameResults)
+    
+    return stats
+    
+    
+    
 # HELPERS
 
 def _didPlayerWinFromResult(gameResult):
@@ -547,3 +587,11 @@ def _isChampionBannedInGame(game, championId):
 def _getAverage(l):
     # rounds to 2 digits
     return round(sum(l) / float(len(l)), 2)
+    
+def _getSetOfGameIdsFromGameResults(gameResults):
+    gameIds = set()
+    
+    for gameResult in gameResults:
+        gameIds.add(gameResult['gameId'])
+    
+    return gameIds

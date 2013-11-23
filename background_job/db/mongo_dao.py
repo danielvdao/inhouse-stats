@@ -99,6 +99,18 @@ def getGameResultsForSummonerName(summonerName):
         gameResults.append(cursor)
     
     return gameResults
+    
+def getGameIdsWithSummonersOnSameTeam(summoners):
+    summonerIds = [getSummonerIdFromName(summoner) for summoner in summoners]
+    
+    cursor = db[GAME_COLLECTION_NAME].find({
+        '$or': [
+            {'$and': [{'game.teamOne.array.accountId':summonerId} for summonerId in summonerIds]},
+            {'$and': [{'game.teamTwo.array.accountId':summonerId} for summonerId in summonerIds]}
+        ]
+    })
+    
+    return [element['_id'] for element in cursor]
 
 def getGameIdsMissingResults():
     """Checks to see if all game ids have results. Return a list of game ids that don't.
