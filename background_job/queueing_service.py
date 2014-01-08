@@ -4,7 +4,7 @@ import sys
 import time
 
 TIMEOUT_IN_SECONDS = 86400 # 24 hours
-POLL_INTERVAL = 900 # 15 minutes in seconds
+POLL_INTERVAL = 1200 # 20 minutes in seconds
 PLAYER_LIST_FILENAME = 'player_list.txt'
 
 def main():
