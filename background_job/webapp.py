@@ -1,5 +1,6 @@
-from flask import Flask
-from flask import request
+from flask import Flask, request, session, g, redirect, url_for, \
+     abort, render_template, flash
+
 import stats_pp
 
 app = Flask(__name__)
@@ -74,6 +75,11 @@ def _getCommonHtmlString():
 
 def _surroundLink(link):
     return '<a href="%s">%s</a><br>' % (link, link)
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+    # return 'hello world!'
     
 if __name__ == "__main__":
     app.debug = True
